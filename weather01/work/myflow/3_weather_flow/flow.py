@@ -18,6 +18,7 @@ async def fetch_weather_and_pollution(session, row):
     lon = row["lon"]
     district = row["district_en"]
     province = row["province_en"]
+    district_id = row["district_id"]
 
     try:
         params = {"lat": lat, "lon": lon, "appid": API_KEY, "units": "metric"}
@@ -42,9 +43,9 @@ async def fetch_weather_and_pollution(session, row):
 
         await asyncio.sleep(2)
 
-        timestamp = datetime.now()
+        timestamp = datetime.utcnow()
         thai_tz = pytz.timezone('Asia/Bangkok')
-        created_at = timestamp.replace(tzinfo=thai_tz)
+        localtime = timestamp.astimezone(thai_tz)
 
         return {
             "timestamp": timestamp,
@@ -54,9 +55,10 @@ async def fetch_weather_and_pollution(session, row):
             "hour": timestamp.hour,
             "minute": timestamp.minute,
             "created_at": created_at,
+            "district_id": district_id,
             "district": district,
             "province": province,
-            "location": weather_data.get("name", district),
+            "localtime": localtime,
             "weather_main": weather_data["weather"][0]["main"],
             "weather_description": weather_data["weather"][0]["description"],
             "main.temp": weather_data["main"]["temp"],
