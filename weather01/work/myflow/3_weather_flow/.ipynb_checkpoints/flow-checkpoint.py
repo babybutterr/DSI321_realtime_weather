@@ -18,7 +18,7 @@ async def fetch_weather_and_pollution(session, row):
     lon = row["lon"]
     district = row["district_en"]
     province = row["province_en"]
-    #district_id = row["district_id"]
+    district_id = row["district_id"]
 
     try:
         params = {"lat": lat, "lon": lon, "appid": API_KEY, "units": "metric"}
