@@ -1,0 +1,128 @@
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+import json
+import s3fs
+import time
+
+st.set_page_config(page_title="PM2.5 Choropleth Dashboard", layout="wide")
+st.title("PM2.5 Choropleth Map (ระดับจังหวัด และ ระดับอำเภอ)")
+
+# --- ✅ ตั้งค่า S3 FileSystem สำหรับ LakeFS ---
+fs = s3fs.S3FileSystem(
+    key='your-access-key',
+    secret='your-secret-key',
+    client_kwargs={'endpoint_url': 'https://<your-lakefs-endpoint>'}
+)
+
+# --- ✅ Path ของ Parquet ไฟล์บน LakeFS ---
+parquet_path = 's3://<repository>/<branch>/path/to/pm25.parquet'
+code_path = 's3://<repository>/<branch>/path/to/codeamphoeexcel.parquet'
+
+# --- ✅ โหลด GeoJSON ---
+@st.cache_data
+def load_geojson(path):
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+province_geojson = load_geojson("gadm41_THA_1.json")
+amphoe_geojson = load_geojson("gadm41_THA_2.json")
+
+# --- ✅ โหลดข้อมูลจาก LakeFS ---
+@st.cache_data(ttl=60)  # Cache ข้อมูลไว้ 60 วินาที
+def load_data():
+    df = pd.read_parquet(parquet_path, filesystem=fs)
+    df_code = pd.read_parquet(code_path, filesystem=fs)
+
+    df.columns = df.columns.str.replace('"', '')
+    df = df.rename(columns={
+        "province": "province_name",
+        "district": "amphoe_name",
+        "components_pm2_5": "pm25"
+    })
+    df["timestamp"] = pd.to_datetime(df["timestamp"])
+    df["province_name"] = df["province_name"].str.strip().str.replace('"', '', regex=False).str.replace('\xa0', '', regex=False)
+    df["amphoe_name"] = df["amphoe_name"].str.strip().str.replace('"', '', regex=False).str.replace('\xa0', '', regex=False)
+
+    # โหลดรหัสอำเภอ
+    df_code = df_code.rename(columns={"amphoeEN": "amphoe_name"})
+    df = pd.merge(df, df_code[["amphoe_name", "amphoe_id", "province_id"]], on="amphoe_name", how="left")
+    
+    # สร้างคอลัมน์วันและเวลา
+    df["date"] = df["timestamp"].dt.date
+    df["time"] = df["timestamp"].dt.time
+    df["datetime"] = df["timestamp"].dt.strftime("%Y-%m-%d %H:%M")
+    
+    return df
+
+# โหลดข้อมูล
+df = load_data()
+st.write("📌 **Data Loaded Successfully!**")
+st.dataframe(df)
+
+# === 🕒 Filter Date ===
+st.subheader("🗓️ Filter by Date")
+min_date = df["date"].min()
+max_date = df["date"].max()
+selected_date = st.date_input("เลือกวันที่", max_date, min_value=min_date, max_value=max_date)
+
+# 🔍 กรองข้อมูลตามวันที่
+filtered_df = df[df["date"] == selected_date]
+
+# --- 🔄 เมนูเลือกระดับ ---
+level = st.radio("เลือกระดับแผนที่", ["จังหวัด (Province)", "อำเภอ (Amphoe)"])
+
+if level == "จังหวัด (Province)":
+    map_df = filtered_df.groupby(["province_id", "datetime"], as_index=False)["pm25"].mean()
+    geojson = province_geojson
+    locations = "province_id"
+    featureidkey = "properties.CC_1"
+else:
+    map_df = filtered_df.groupby(["amphoe_id", "datetime"], as_index=False)["pm25"].mean()
+    geojson = amphoe_geojson
+    locations = "amphoe_id"
+    featureidkey = "properties.CC_2"
+
+# --- 🎮 เพิ่ม Play/Pause Animation ---
+animation_speed = st.slider("Animation Speed (seconds)", 0.1, 2.0, 0.5)
+play_button = st.button("▶️ Play")
+pause_button = st.button("⏸️ Pause")
+stop_animation = False
+
+if pause_button:
+    stop_animation = True
+
+# --- สร้าง Choropleth Map ---
+current_index = 0
+map_df = map_df.sort_values(by="datetime").reset_index(drop=True)
+time_points = map_df["datetime"].unique()
+
+fig = px.choropleth_mapbox(
+    map_df,
+    geojson=geojson,
+    locations=locations,
+    featureidkey=featureidkey,
+    color="pm25",
+    color_continuous_scale="YlOrRd",
+    mapbox_style="carto-positron",
+    zoom=5,
+    center={"lat": 13.5, "lon": 100.5},
+    opacity=0.6,
+    labels={"pm25": "PM2.5"},
+    hover_name=locations,
+)
+
+# --- 🔄 Real-time Animation Loop ---
+if play_button:
+    while current_index < len(time_points) and not stop_animation:
+        st.write(f"🕒 **Timestamp:** {time_points[current_index]}")
+        sub_df = map_df[map_df["datetime"] == time_points[current_index]]
+        fig.update_traces(
+            z=sub_df["pm25"],
+            customdata=sub_df[locations]
+        )
+        st.plotly_chart(fig, use_container_width=True)
+        current_index += 1
+        time.sleep(animation_speed)
+        if current_index >= len(time_points):
+            current_index = 0
