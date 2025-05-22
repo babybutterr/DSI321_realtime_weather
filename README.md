@@ -86,6 +86,22 @@ Project Proposal: Real-Time Weather Data Pipeline with Visualization
 เครื่องมือ: Prefect 3, Docker, Parquet, OpenWeatherMap API (แบบใช้ฟรี), Streamlit, Python
 ฮาร์ดแวร์: คอมพิวเตอร์ส่วนตัวหรือเซิร์ฟเวอร์คลาวด์ (RAM 4GB, CPU 2 คอร์, พื้นที่เก็บข้อมูล 20GB)
 งบประมาณ: ต่ำมาก (ใช้เครื่องมือฟรีทั้งหมด ยกเว้นหากขยายระบบด้วยบริการคลาวด์)
+## เทคโนโลยีที่ใช้ ##
+1. Jupyter Notebook: สำหรับการวิเคราะห์และแสดงผลข้อมูล
+2. Docker Compose: สำหรับการจัดการและรันคอนเทนเนอร์ของแอปพลิเคชัน
+3. Shell Script: สำหรับการตั้งค่าและรันระบบอัตโนมัติ
+## วิธีการเริ่มต้น ##
+1. ติดตั้ง Docker และ Docker Compose บนเครื่องของคุณ
+2. โคลนโปรเจกต์นี้:
+   git clone https://github.com/babybutterr/dsi321_2025.git
+3. เข้าไปในโฟลเดอร์โปรเจกต์:
+   cd dsi321_2025
+4. รันระบบด้วย Docker Compose:
+   docker-compose up
+5. ติดตั้ง dependencies:
+   pip install -r requirements.txt
+6. รันแอปพลิเคชัน:
+   streamlit run app.py
 ## 6. บทสรุป ##
  โครงงาน Real-Time PM2.5 Monitoring Dashboard เป็นโอกาสสำคัญในการผสานเป้าหมายทางการศึกษากับการใช้งานจริง โดยต่อยอดจากกรอบแนวคิดของโครงการ papapipeline ที่ใช้ Prefect, Docker และ GitHub ในการสอนแนวคิดด้าน Data Pipeline ให้แก่ผู้เริ่มต้นในสายงานวิศวกรรมข้อมูล
 โครงงานนี้มุ่งเน้นการพัฒนา pipeline ที่สามารถดึงข้อมูลค่าฝุ่น PM2.5 และสภาพอากาศจาก OpenWeatherMap API ทุก 15 นาที นำข้อมูลไปจัดเก็บและแสดงผลแบบโต้ตอบได้ผ่านแดชบอร์ดที่ใช้งานง่าย พร้อมทั้งทดลองเสริมศักยภาพของระบบด้วยการใช้ Machine Learning เพื่อคาดการณ์แนวโน้มค่าฝุ่นในอนาคตและหาปัจจัยที่ส่งผลให้ค่าฝุ่น PM2.5 มีค่ามาก
