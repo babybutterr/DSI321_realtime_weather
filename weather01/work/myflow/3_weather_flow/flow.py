@@ -23,31 +23,25 @@ async def fetch_weather_and_pollution(session, row):
     try:
         params = {"lat": lat, "lon": lon, "appid": API_KEY, "units": "metric"}
 
-        # Weather API call
         async with session.get(WEATHER_URL, params=params) as weather_resp:
             weather_data = await weather_resp.json()
+        await asyncio.sleep(2)
 
         if weather_data.get("cod") != 200:
             print(f"[ERROR] Missing weather data for {district}: {weather_data}")
             return None
 
-        await asyncio.sleep(2)
-
-        # Pollution API call
         async with session.get(POLLUTION_URL, params=params) as pollution_resp:
             pollution_data = await pollution_resp.json()
+        await asyncio.sleep(2)
 
         if "list" not in pollution_data or not pollution_data["list"]:
             print(f"[ERROR] Missing pollution data for {district}: {pollution_data}")
             return None
 
-        await asyncio.sleep(2)
-
         timestamp = datetime.utcnow()
-        #timestamp = datetime.now()
         thai_tz = pytz.timezone('Asia/Bangkok')
         localtime = timestamp.astimezone(thai_tz)
-        #created_at = dt.replace(tzinfo=thai_tz)
 
         return {
             "timestamp": timestamp,
@@ -56,7 +50,6 @@ async def fetch_weather_and_pollution(session, row):
             "day": timestamp.day,
             "hour": timestamp.hour,
             "minute": timestamp.minute,
-            #"created_at": created_at,
             "district_id": district_id,
             "district": district,
             "province": province,
@@ -85,8 +78,19 @@ async def fetch_weather_and_pollution(session, row):
     except Exception as e:
         print(f"[ERROR] Exception for {district}: {e}")
         return None
+
+
 @flow(name="weather-flow", flow_run_name="weather-run", log_prints=True)
 async def main_flow():
+    # เช็คให้เก็บเฉพาะเวลา 0,15,30,45
+    thai_tz = pytz.timezone("Asia/Bangkok")
+    now = datetime.now(thai_tz)
+    if now.minute not in [0, 15, 30, 45]:
+        print(f"⏰ Skipping: Not in 15-minute interval: {now.strftime('%H:%M')}")
+        return
+
+    print(f"✅ Running collection at {now.strftime('%Y-%m-%d %H:%M')}")
+
     df = pd.read_csv("/home/jovyan/work/districts.csv")
     results = []
 
@@ -99,13 +103,19 @@ async def main_flow():
             batch_results = await asyncio.gather(*tasks)
             results.extend([r for r in batch_results if r is not None])
             if i + BATCH_SIZE < len(df):
-                print(f"Waiting {WAIT_BETWEEN_BATCHES} seconds before next batch...")
+                print(f"⏳ Waiting {WAIT_BETWEEN_BATCHES}s before next batch...")
                 await asyncio.sleep(WAIT_BETWEEN_BATCHES)
 
-    df_results = pd.DataFrame(results)
-    print(df_results)
+    if not results:
+        print("❌ No data collected.")
+        return
 
-    # lakeFS credentials from your docker-compose.yml
+    # กรองซ้ำอีกรอบให้แน่ใจว่าเก็บเฉพาะ 0,15,30,45
+    results = [r for r in results if r["minute"] in [0, 15, 30, 45]]
+    df_results = pd.DataFrame(results)
+    print(df_results.head())
+
+    # Write to lakeFS
     ACCESS_KEY = "access_key"
     SECRET_KEY = "secret_key"
     lakefs_endpoint = "http://lakefs-dev:8000/"
@@ -123,7 +133,8 @@ async def main_flow():
     }
 
     df_results.to_parquet(
-        lakefs_s3_path,
-        storage_options=storage_options,
-        partition_cols=['year', 'month', 'day', 'hour'],
+    lakefs_s3_path,
+    engine="pyarrow",
+    storage_options=storage_options,
+    partition_cols=['year', 'month', 'day', 'hour', 'minute'],
     )
