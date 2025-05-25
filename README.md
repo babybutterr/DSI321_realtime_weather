@@ -93,7 +93,7 @@ Project Proposal: Real-Time Weather Data Pipeline with Visualization
 ## วิธีการเริ่มต้น ##
 1. ติดตั้ง Docker และ Docker Compose บนเครื่องของคุณ
 2. โคลนโปรเจกต์นี้:
-   git clone https://github.com/babybutterr/dsi321_2025.git
+   ('git clone https://github.com/babybutterr/dsi321_2025.git')
 3. เข้าไปในโฟลเดอร์โปรเจกต์:
    cd dsi321_2025
 4. รันระบบด้วย Docker Compose:
