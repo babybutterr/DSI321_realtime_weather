@@ -96,12 +96,16 @@ Project Proposal: Real-Time Weather Data Pipeline with Visualization
    ```bash
    git clone https://github.com/babybutterr/dsi321_2025.git
 3. เข้าไปในโฟลเดอร์โปรเจกต์:
+   ```bash
    cd dsi321_2025
 4. รันระบบด้วย Docker Compose:
+   ```bash
    docker-compose up
 5. ติดตั้ง dependencies:
+   ```bash
    pip install -r requirements.txt
 6. รันแอปพลิเคชัน:
+   ```bash
    streamlit run app.py
 ## 6. บทสรุป ##
  โครงงาน Real-Time PM2.5 Monitoring Dashboard เป็นโอกาสสำคัญในการผสานเป้าหมายทางการศึกษากับการใช้งานจริง โดยต่อยอดจากกรอบแนวคิดของโครงการ papapipeline ที่ใช้ Prefect, Docker และ GitHub ในการสอนแนวคิดด้าน Data Pipeline ให้แก่ผู้เริ่มต้นในสายงานวิศวกรรมข้อมูล
