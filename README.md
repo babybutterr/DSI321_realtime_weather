@@ -166,10 +166,3 @@ This dashboard visualizes PM2.5
 ![Demo 1](weather01/demo1.png)
 ![Demo 2](weather01/demo2.png)
 
-## Time Series Animation
-
-<p float="left">
-  <img src="images/timeseries1.png" width="45%" />
-  <img src="images/timeseries2.png" width="45%" />
-</p>
-
