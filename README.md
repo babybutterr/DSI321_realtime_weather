@@ -138,6 +138,7 @@ GitHub – สำหรับ version control และเผยแพร่โ�
 3. เข้าไปในโฟลเดอร์โปรเจกต์:
    ```bash
    cd dsi321_2025
+   
    Then go into folder dsi321_2025 where docker-compose.yml exist.
 4. รันระบบด้วย Docker Compose:
    ```bash
@@ -171,12 +172,8 @@ PM10 ซึ่งมีความสัมพันธ์เชิงบวก
 
 This dashboard visualizes PM2.5 
 
-## Sample Output
-
 ![Demo 1](demo1.png)
 ![Demo 2](demo2.png)
 
 
-<img src="demo1.png" width="45%" />
-<img src="demo2.png" width="45%" />
 
