@@ -163,6 +163,6 @@ This dashboard visualizes PM2.5
 
 ## Sample Output
 
-![Demo 1](weather01/demo1.png)
-![Demo 2](weather01/demo2.png)
+![Demo 1](main/demo1.png)
+![Demo 2](main/demo2.png)
 
