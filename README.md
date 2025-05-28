@@ -139,14 +139,14 @@ GitHub – สำหรับ version control และเผยแพร่โ�
    ```bash
    cd dsi321_2025
    
-   Then go into folder dsi321_2025 where docker-compose.yml exist.
 4. รันระบบด้วย Docker Compose:
+   Then go into folder dsi321_2025 where docker-compose.yml exist.
    ```bash
    docker-compose up
-6. ติดตั้ง dependencies:
+5. ติดตั้ง dependencies:
    ```bash
    pip install -r requirements.txt
-7. รันแอปพลิเคชัน:
+6. รันแอปพลิเคชัน:
    ```bash
    streamlit run app.py
 ## 6. บทสรุป ##
