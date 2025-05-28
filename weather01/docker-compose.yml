@@ -85,10 +85,7 @@ services:
     command: streamlit run app.py --server.port=8503 --server.enableCORS=false
     depends_on:
       - lakefs-dev
-      - 
-    networks:
-      - default
-    restart: unless-stopped
+      - prefect-server
         
         
 ### ตัวนี้ไว้ล่างสุด            
