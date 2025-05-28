@@ -72,20 +72,22 @@ services:
       - PREFECT_API_URL=http://prefect-server:4200/api
     # networks:
     #   - prefect-network
+    
   streamlit:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-    container_name: streamlit-app
-    ports:
-      - "8503:8503"
-    volumes:
-      - ./:/app
-    working_dir: /app/visualization
-    command: streamlit run app.py --server.port=8503 --server.enableCORS=false
-    depends_on:
-      - lakefs-dev
-      - prefect-server
+      build:
+        context: .
+        dockerfile: make/Dockerfile.streamlit
+      ports:
+        - "8501:8501"
+      volumes:
+        - ./streamlit:/app 
+      environment:
+        - LAKEFS_ACCESS_KEY=access_key
+        - LAKEFS_SECRET_KEY=secret_key
+        - LAKEFS_ENDPOINT=http://lakefs-dev:8000
+      depends_on:
+        - lakefs-dev
+        - prefect-server
         
         
 ### ตัวนี้ไว้ล่างสุด            
