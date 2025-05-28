@@ -147,10 +147,13 @@ GitHub – สำหรับ version control และเผยแพร่โ�
    Then go into folder dsi321_2025 where docker-compose.yml exist.
    ```bash
    docker-compose up
-5. ติดตั้ง dependencies:
+5. เข้าไปที่ Jupyter แล้วเข้าไปที่โฟลเดอร์ myflow เปิด Terminal :
+   ```bash
+   python deploy-local.py
+6. ติดตั้ง dependencies:
    ```bash
    pip install -r requirements.txt
-6. รันแอปพลิเคชัน:
+7. รันแอปพลิเคชัน:
    ```bash
    streamlit run app.py
 ## 6. บทสรุป ##
